@@ -1,36 +1,48 @@
-name: Deploy
+name: Deploy React App to GitHub Pages
 
 on:
   push:
     branches:
       - microsoft_graphrag
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# Specifies the permissions the GITHUB_TOKEN will have.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "16" # Specify the Node.js version you need
-
+          node-version: "16"
+          cache: "npm"
+          cache-dependency-path: graphrag-visualizer-main/package-lock.json
       - name: Install dependencies
+        working-directory: ./graphrag-visualizer-main
         run: npm install
+      - name: Build
+        working-directory: ./graphrag-visualizer-main
+        run: npm run build
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './graphrag-visualizer-main/build'
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          REACT_APP_GA_MEASUREMENT_ID: ${{ secrets.REACT_APP_GA_MEASUREMENT_ID }}
-          CI: false
-        run: |
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
-          npm run deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
