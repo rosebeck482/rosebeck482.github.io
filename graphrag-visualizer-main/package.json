@@ -1,7 +1,7 @@
 {
   "name": "graphrag-visualizer",
   "version": "0.1.0",
-  "homepage": "https://rosebeck482.github.io/microsoft_graphrag/",
+  "homepage": "https://rosebeck482.github.io/",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.0",
